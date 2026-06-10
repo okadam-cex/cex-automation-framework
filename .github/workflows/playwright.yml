@@ -5,10 +5,10 @@ on:
   pull_request:
     branches: [ main, master ]
   
-  # Manual Trigger: Allows you or Arwa to run the suite manually from GitHub UI
+  # Manual Trigger: Permits ad-hoc manual execution from the GitHub Actions dashboard
   workflow_dispatch:
 
-  # Scheduled Trigger: Runs automatically every Monday at 6:00 AM UTC
+  # Scheduled Trigger: Executes the automated regression suite every Monday morning at 6:00 AM UTC
   schedule:
     - cron: '0 6 * * 1'
 
@@ -32,12 +32,12 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test
       
-    # ALLURE STEP 1: Compiles the test data from allure-results into the final HTML dashboard
+    # Allure Processing: Standardized to use allure-commandline for strict compliance
     - name: Generate Allure Report
       if: always()
-      run: npx allure generate allure-results --clean -o allure-report
+      run: npx allure-commandline generate allure-results --clean -o allure-report
       
-    # ALLURE STEP 2: Uploads the compiled Allure report so the team can download it
+    # Artifact Archival: Uploads the compiled Allure report folder for distribution
     - name: Upload Allure Report Artifact
       uses: actions/upload-artifact@v4
       if: always()
