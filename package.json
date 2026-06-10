@@ -1,0 +1,22 @@
+{
+  "name": "automation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@reportportal/agent-js-playwright": "^5.4.1",
+    "@types/node": "^25.9.1",
+    "allure-playwright": "^3.9.0",
+    "playwright-tesults-reporter": "^1.5.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "mysql2": "^3.22.4"
+  }
+}
