@@ -1,67 +1,63 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import { StockTakerPage } from '../src/pages/stockManagement/StockTakerPage.js';
 import { writeAllureEnvironmentProperties } from './allureEnvWriter.js';
-import * as allure from 'allure-js-commons'; 
-
-let testCaseIdCounter = 1;
+import { dashLocators } from '../src/common/dashLocators.js';
+import { handleGlobalLoader } from '../src/common/dashHelpers.js';
 
 const testData = {
   loginUser: "Omkar Kadam",              
   staffTag: "666",                       
   category: "NFC Figures",
-  branchName: "UTWATF - Watford 2022",
-  barcodes: ['00045496893989', '0000505189323', '00045496893996']
+  branchName: "UTWATF - Cex Watford 2022", 
+  BoxID: ['00045496893989', '0000505189323', '00045496893996', '00045496893989'] 
 };
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('https://uat-dashwin2022.cex.webuy.dev/home/', { waitUntil: 'domcontentloaded' });
-  const dashboardContainer = page.locator('#wrapper, #app, .dash-main-container');
-  await dashboardContainer.waitFor({ state: 'attached', timeout: 15000 });
+  // 1. Navigate directly to dashboard (Login is bypassed via auth.json)
+  await page.goto('https://uat-dashwin2022.cex.webuy.dev/home/');
+  
+  // 2. Clear the session-specific Branch prompt
+  await dashLocators.branchSelection.branchOption(page, testData.branchName).waitFor({ state: 'visible', timeout: 10000 });
+  await dashLocators.branchSelection.branchOption(page, testData.branchName).click();
+  await dashLocators.branchSelection.branchSaveBtn(page).click();
 
-  const branchOption = page.getByText('UTWATF - Cex Watford 2022');
-  await branchOption.waitFor({ state: 'visible', timeout: 15000 });
-  await branchOption.click();
-  await page.locator('#branches-save').click();
+  // 3. Clear the session-specific Manager PIN prompt
+  await dashLocators.branchSelection.staffTagInput(page).fill(process.env.APP_TAG || testData.staffTag);
+  await dashLocators.branchSelection.tagModalYesBtn(page).click();
 
-  const staffTagInput = page.locator('#BranchSelection_StaffTagInput, input[type="password"]');
-  await staffTagInput.waitFor({ state: 'visible', timeout: 10000 });
-  await staffTagInput.fill(process.env.APP_TAG || testData.staffTag);
-  await page.locator('#BranchSelection_StaffTagModal input[value="Yes"], button:has-text("Yes")').click();
-
-  const mainLoader = page.locator('#Splashloader, .dash-main-loader');
-  await expect(mainLoader).toBeHidden({ timeout: 15000 });
-  await page.waitForLoadState('networkidle').catch(() => {});
+  // 4. Wait for the dashboard to stabilize
+  await handleGlobalLoader(page);
 });
 
-test('Stock Management - Complete Stock Check End-to-End Flow', async ({ page }) => {
-  const dynamicTestCaseId = `DASH-TC-${testCaseIdCounter}`;
+// TEST NAME ALIGNED EXACTLY WITH JIRA SCENARIO
+test('DASH-TC-1483: Scenario 1 - Complete Stock Check End-to-End Flow', async ({ page }) => {
+  const jiraTestCaseId = 'DASH-TC-1483';
   
-  // MAPS SPREADSHEET ROW DATA FOR ARWA
   writeAllureEnvironmentProperties({
-    "Test Case ID": dynamicTestCaseId,
+    "Test Case ID": jiraTestCaseId,
     "Test User": testData.loginUser,
     "Branch Location": testData.branchName,
     "Target Module": "Stock Taker Tool",
     "Audit Category": testData.category
   });
 
-  testCaseIdCounter++;
   const stockTakerPage = new StockTakerPage(page);
 
   await stockTakerPage.navigateToModule(testData.staffTag);
   await stockTakerPage.startNewStockCheck(testData.category);
 
-  for (const currentBoxId of testData.barcodes) {
+  for (const currentBoxId of testData.BoxID) {
     await stockTakerPage.scanBoxIdViaKeyboardReturn(currentBoxId);
   }
 
   await stockTakerPage.verifyProductVisibleInGrid('Amiibo');
   await stockTakerPage.clickNextToProceed();
-  await stockTakerPage.incrementActualQuantityForBox(testData.barcodes[0], 1);
+  await stockTakerPage.incrementActualQuantityForBox(testData.BoxID[0], 1);
   await stockTakerPage.completeVariancePreview();
   await stockTakerPage.clickVarianceNow();
   await stockTakerPage.handleVarianceConfirmationModal(testData.staffTag);
   
-  await page.screenshot({ path: `tests/outputScreenshots/${dynamicTestCaseId}_Success_Snapshot.png`, fullPage: true });
+// Saves screenshot using the Jira ID inside the newly mapped nested folder!
+  await page.screenshot({ path: `tests/outputScreenshots/stockManagement/stockTaker/${jiraTestCaseId}_Final_State.png`, fullPage: true });
   await stockTakerPage.verifyAndResetStockTakerSuccessState();
 });

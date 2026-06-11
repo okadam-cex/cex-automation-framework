@@ -1,37 +1,63 @@
 import { expect } from '@playwright/test';
+import { dashLocators } from '../../common/dashLocators.js';
+import { handleGlobalLoader } from '../../common/dashHelpers.js';
 
 export class BoxHistoryPage {
   constructor(page) {
     this.page = page;
-    // Locators based on original verified working steps
-    this.boxHistoryCard = page.getByRole('heading', { name: 'Box History' });
-    this.searchInput = page.locator('#algoliaSearchInput');
-    this.searchBtn = page.locator('button.box-search-btn');
   }
 
   async navigateToModule() {
-    console.log('Step 1: Navigating to Box History module and verifying URL target redirection...');
-    await this.boxHistoryCard.click();
-    await this.page.waitForURL('**/boxhistory/search', { timeout: 10000 });
+    console.log('Step 1: click on the box history module.');
+    await dashLocators.boxHistory.boxHistoryCard(this.page).click();
+    
+    await this.page.waitForURL('**/boxhistory/**', { timeout: 10000 });
+    await handleGlobalLoader(this.page);
+    
+    // SAVES TO MODULE SUBFOLDER
+    await this.page.screenshot({ path: 'tests/outputScreenshots/boxHistory/Step1_BoxHistory_Module_Loaded.png', fullPage: true });
   }
 
-  async searchBox(boxIdOrName, autocompleteText) {
-    console.log(`Step 2: Typing search query: [ ${boxIdOrName} ]`);
-    await this.searchInput.fill(boxIdOrName);
+  async searchByBoxId(boxId, stepName = 'Step2') {
+    console.log(`${stepName}: we can search particular transaction with boxid [ ${boxId} ]`);
+    await dashLocators.boxHistory.searchInput(this.page).fill(boxId);
+    await dashLocators.boxHistory.searchBtn(this.page).click();
+    await handleGlobalLoader(this.page);
     
-    // Select the target item from the auto-complete dropdown list overlay
-    const dropdownOption = this.page.getByText(autocompleteText);
-    await dropdownOption.click();
+    // SAVES TO MODULE SUBFOLDER
+    await this.page.screenshot({ path: `tests/outputScreenshots/boxHistory/${stepName}_Search_Executed_For_${boxId}.png`, fullPage: true });
+  }
+
+  async clearFilters() {
+    console.log('Step 3: after entering box id and click on the clear button');
+    await dashLocators.boxHistory.clearBtn(this.page).click();
+    await handleGlobalLoader(this.page);
     
-    // Trigger search
-    await this.searchBtn.click();
-    await this.page.waitForLoadState('networkidle');
+    await expect(dashLocators.boxHistory.searchInput(this.page)).toBeEmpty();
+    
+    // SAVES TO MODULE SUBFOLDER
+    await this.page.screenshot({ path: 'tests/outputScreenshots/boxHistory/Step3_Filters_Cleared_Successfully.png', fullPage: true });
   }
 
   async verifySearchResultVisible(expectedItemText) {
-    console.log(`Step 3: Confirming search record visibility for text: "${expectedItemText}"`);
-    // Selects the text block inside the data results row rather than the input box
-    const resultItem = this.page.getByText(expectedItemText).last();
-    await expect(resultItem).toBeVisible({ timeout: 15000 });
+    console.log(`Verifying visibility of product record: "${expectedItemText}"`);
+    const targetElement = dashLocators.boxHistory.searchResultItem(this.page, expectedItemText);
+    await expect(targetElement).toBeVisible({ timeout: 15000 });
+    
+    const safeFilename = expectedItemText.replace(/[^a-zA-Z0-9]/g, '_');
+    
+    // SAVES TO MODULE SUBFOLDER
+    await this.page.screenshot({ path: `tests/outputScreenshots/boxHistory/Verified_Result_${safeFilename}.png`, fullPage: true });
+  }
+
+  async searchBoxWithAutocomplete(boxIdOrName, autocompleteText) {
+    console.log(`Step 4: enter the box name and click on search button [ ${boxIdOrName} ]`);
+    await dashLocators.boxHistory.searchInput(this.page).fill(boxIdOrName);
+    await this.page.getByText(autocompleteText).click();
+    await dashLocators.boxHistory.searchBtn(this.page).click();
+    await handleGlobalLoader(this.page);
+    
+    // SAVES TO MODULE SUBFOLDER
+    await this.page.screenshot({ path: `tests/outputScreenshots/boxHistory/Step4_Search_Autocomplete_${boxIdOrName}.png`, fullPage: true });
   }
 }

@@ -1,11 +1,19 @@
-# Playwright
+# Node Dependencies
 node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/playwright/.auth/
 
-# Allure Reporting
+# Environment Variables & Sensitive Data
+.env
+auth.json
+
+# Playwright Default Output
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Custom Screenshot Folders
+tests/outputScreenshots/
+
+# Allure Reporting Artifacts
 allure-results/
 allure-report/

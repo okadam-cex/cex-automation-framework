@@ -1,82 +1,46 @@
 import { expect } from '@playwright/test';
+import { dashLocators } from '../../common/dashLocators.js';
+import { handleGlobalLoader } from '../../common/dashHelpers.js';
 
 export class LoginPage {
   constructor(page) {
     this.page = page;
-    
-    // Core identity form components
-    this.oauthCexToolsLoginBtn = page.getByRole('button', { name: 'Login with CeXTools' });
-    this.oauthUsernameInput = page.locator('#UserName');
-    this.oauthPasswordInput = page.locator('#Password');
-    this.oauthSubmitBtn = page.getByRole('button', { name: 'Login', exact: true });
-    
-    // Interception locators for environment redirect anomalies
-    this.errorGoBackHomeLink = page.getByRole('link', { name: 'Home', exact: true });
-    this.splashLoader = page.locator('#Splashloader, .dash-main-loader');
-
-    // BRAND SELECTION & SECURITY MODAL LOCATORS
-    this.branchSaveBtn = page.locator('#branches-save');
-    this.staffTagInput = page.locator('#BranchSelection_StaffTagInput');
-    this.tagModalYesBtn = page.locator('#BranchSelection_StaffTagModal input[value="Yes"]');
-    this.tagModalContainer = page.locator('#BranchSelection_StaffTagModal');
   }
 
-  /**
-   * Executes a single global session authorization loop, bypasses UAT redirect errors,
-   * handles branch selection, and completes manager PIN clearance.
-   */
   async loginWithOAuth(targetUrl, username, password, branchName, managerTag) {
-    // 1. Navigate to the identity server URL
+    console.log('Step 1: Navigate to Login URL');
     await this.page.goto(targetUrl);
     
-    // 2. Open login inputs
-    await this.oauthCexToolsLoginBtn.click();
+    console.log('Step 2: Enter credentials and submit');
+    await dashLocators.login.oauthCexToolsLoginBtn(this.page).click();
+    await dashLocators.login.oauthUsernameInput(this.page).fill(username);
+    await dashLocators.login.oauthPasswordInput(this.page).fill(password);
+    await dashLocators.login.oauthSubmitBtn(this.page).click();
     
-    // 3. Fill user credentials
-    await this.oauthUsernameInput.fill(username);
-    await this.oauthPasswordInput.fill(password);
-    
-    // 4. Submit form
-    await this.oauthSubmitBtn.click();
-    
-    // 5. Intercept redirect anomalies if present
     try {
-      await this.errorGoBackHomeLink.waitFor({ state: 'visible', timeout: 5000 });
-      console.log('Redirect anomaly caught. Forcing page route...');
-      await this.errorGoBackHomeLink.click();
+      const errorLink = dashLocators.login.errorGoBackHomeLink(this.page);
+      await errorLink.waitFor({ state: 'visible', timeout: 5000 });
+      console.log('Bypassing UAT redirection screen...');
+      await errorLink.click();
     } catch (e) {
-      console.log('App navigated past auth gate without errors.');
+      // Bypassed cleanly
     }
 
-    // 6. Change wait state behavior to trigger as soon as the DOM is parsed
-    await this.page.waitForURL('**/home**', { 
-      waitUntil: 'domcontentloaded', 
-      timeout: 25000 
-    });
-    
-    // 7. Settle baseline background loaders
-    await expect(this.splashLoader).toBeHidden({ timeout: 15000 });
+    await this.page.waitForURL('**/home**', { waitUntil: 'domcontentloaded', timeout: 25000 });
+    await handleGlobalLoader(this.page);
 
-    // 8. SELECT TARGET REPOSITORY STORE BRANCH
-    const targetStore = this.page.getByText(branchName);
-    await targetStore.waitFor({ state: 'visible', timeout: 10000 });
-    await targetStore.click();
-    await this.branchSaveBtn.click();
+    console.log(`Step 3: Select Branch Location [ ${branchName} ]`);
+    await dashLocators.branchSelection.branchOption(this.page, branchName).click();
+    await dashLocators.branchSelection.branchSaveBtn(this.page).click();
 
-    // 9. ENTER SECURITY PIN AUTHORIZATION GATES
-    await this.staffTagInput.waitFor({ state: 'visible', timeout: 10000 });
-    await this.staffTagInput.fill(managerTag);
-    await this.tagModalYesBtn.click();
+    console.log('Step 4: Enter Staff PIN to authorize session');
+    await dashLocators.branchSelection.staffTagInput(this.page).fill(managerTag);
+    await dashLocators.branchSelection.tagModalYesBtn(this.page).click();
 
-    // 10. Confirm security clearance dialog hides and system unblocks
-    await expect(this.tagModalContainer).toBeHidden({ timeout: 10000 });
-    await expect(this.splashLoader).toBeHidden({ timeout: 15000 });
-    
-    // THE CRITICAL SOLUTION STABILIZATION:
-    // Forces Playwright to wait until all backend API requests finish fetching 
-    // and the dashboard layout stops spinning before saving state!
+    await expect(dashLocators.branchSelection.tagModalContainer(this.page)).toBeHidden({ timeout: 10000 });
+    await handleGlobalLoader(this.page);
     await this.page.waitForLoadState('networkidle').catch(() => {});
     
-    console.log('Login, Branch Selection, and Security clearance verified successfully!');
+    console.log('Login sequence completed successfully.');
   }
 }

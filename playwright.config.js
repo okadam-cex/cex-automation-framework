@@ -43,22 +43,23 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
 
-  /* Configure projects for major browsers */
+/* Configure projects for major browsers */
   projects: [
-    //AUTH PIPELINE SETUP STAGE: Executes the login flow and extracts tokens
+    // AUTH PIPELINE SETUP STAGE: Executes the login flow and extracts tokens
     {
       name: 'setup',
       testMatch: /auth\.setup\.js/,
     },
 
-    //CORE BROWSER RUNNER: Isolated strictly to Chromium to avoid cross-browser performance lag
+    // CORE BROWSER RUNNER: Isolated strictly to Chromium to avoid cross-browser performance lag
     {
       name: 'chromium',
       use: { 
         ...devices['Desktop Chrome'],
-        storageState: 'auth.json', //Starts browser in a pre-authenticated dashboard state
+        // FIXED: Enforce absolute path resolution to guarantee the project accesses the saved setup file
+        storageState: path.resolve(process.cwd(), 'auth.json'), 
       },
-      dependencies: ['setup'], //Forces this project to wait for the setup script to pass successfully
+      dependencies: ['setup'], // Forces this project to wait for the setup script to pass successfully
     },
   ],
 });
