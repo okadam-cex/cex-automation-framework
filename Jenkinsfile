@@ -1,9 +1,9 @@
 pipeline {
     agent any
 
-    // This schedules your test framework to run automatically every Monday morning at 6:00 AM
+    // Automatically runs the suite every Monday at 1:00 PM UTC (13:00)
     triggers {
-        cron('0 6 * * 1')
+        cron('0 13 * * 1')
     }
 
     environment {
@@ -20,16 +20,16 @@ pipeline {
 
         stage('Install Packages') {
             steps {
-                echo 'Installing Node modules and Playwright browsers...'
+                echo 'Installing Node modules and Playwright browsers with system dependencies...'
                 bat 'npm ci'
-                bat 'npx playwright install chromium'
+                // Aligned to install all browsers with dependencies for stability
+                bat 'npx playwright install --with-deps'
             }
         }
 
         stage('Run Automation Suites') {
             steps {
                 echo 'Executing Playwright specs...'
-                // Adjust this line if your script name or command is different in package.json
                 bat 'npx playwright test'
             }
         }
@@ -37,7 +37,8 @@ pipeline {
         stage('Generate Allure Metrics') {
             steps {
                 echo 'Compiling Allure dashboard report...'
-                bat 'npx allure generate allure-results --clean -o allure-report'
+                // Standardized to use allure-commandline to match the GitHub flow
+                bat 'npx allure-commandline generate allure-results --clean -o allure-report'
             }
         }
     }
@@ -47,7 +48,7 @@ pipeline {
             echo 'Archiving test failure artifacts...'
             archiveArtifacts artifacts: 'test-results/**/*', allowEmptyArchive: true
             
-            // This displays your interactive Allure graphs inside your Jenkins dashboard card
+            // Displays interactive Allure graphs inside your Jenkins dashboard card
             allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
         }
     }
