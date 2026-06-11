@@ -8,9 +8,9 @@ on:
   # Manual Trigger: Permits ad-hoc manual execution from the GitHub Actions dashboard
   workflow_dispatch:
 
-  # Scheduled Trigger: Executes the automated regression suite every Monday morning at 6:00 AM UTC
+# Scheduled Trigger: Automatically runs the suite every Monday at 1:00 PM UTC
   schedule:
-    - cron: '0 6 * * 1'
+    - cron: '0 13 * * 1'
 
 jobs:
   test:
