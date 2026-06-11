@@ -9,5 +9,5 @@ export async function writeAllureEnvironmentProperties(properties) {
     // Uses native Allure 3 runtime parameters to safely append without clearing the results index
     await allure.parameter(key, value.toString());
   }
-  console.log('📊 ALLURE 3 MATRIX: Horizontal parameters row mapped natively.');
+  console.log('ALLURE 3 MATRIX: Horizontal parameters row mapped natively.');
 }

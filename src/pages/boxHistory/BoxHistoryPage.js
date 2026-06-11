@@ -10,13 +10,13 @@ export class BoxHistoryPage {
   }
 
   async navigateToModule() {
-    console.log('📌 Step 1: Navigating to Box History module and verifying URL target redirection...');
+    console.log('Step 1: Navigating to Box History module and verifying URL target redirection...');
     await this.boxHistoryCard.click();
     await this.page.waitForURL('**/boxhistory/search', { timeout: 10000 });
   }
 
   async searchBox(boxIdOrName, autocompleteText) {
-    console.log(`📌 Step 2: Typing search query: [ ${boxIdOrName} ]`);
+    console.log(`Step 2: Typing search query: [ ${boxIdOrName} ]`);
     await this.searchInput.fill(boxIdOrName);
     
     // Select the target item from the auto-complete dropdown list overlay
@@ -29,7 +29,7 @@ export class BoxHistoryPage {
   }
 
   async verifySearchResultVisible(expectedItemText) {
-    console.log(`📌 Step 3: Confirming search record visibility for text: "${expectedItemText}"`);
+    console.log(`Step 3: Confirming search record visibility for text: "${expectedItemText}"`);
     // Selects the text block inside the data results row rather than the input box
     const resultItem = this.page.getByText(expectedItemText).last();
     await expect(resultItem).toBeVisible({ timeout: 15000 });

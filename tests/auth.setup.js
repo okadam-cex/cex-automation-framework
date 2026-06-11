@@ -11,7 +11,7 @@ setup('Execute Global Auth Setup', async ({ page }) => {
   const username = process.env.CEXTOOLS_USERNAME || 'okadam';
   const password = process.env.CEXTOOLS_PASSWORD || 'cex@12345';
   
-  // 🎯 Dynamic profile inputs for Branch variables
+  // Dynamic profile inputs for Branch variables
   const branchName = 'UTWATF - Cex Watford 2022';
   const managerTag = process.env.APP_TAG || '666';
 
@@ -20,5 +20,5 @@ setup('Execute Global Auth Setup', async ({ page }) => {
 
   // Freeze session storage data including verified branch context to auth.json file
   await page.context().storageState({ path: authFile });
-  console.log('✓ Global login setup finalized completely with authorized store contexts.');
+  console.log('Login completed.');
 });

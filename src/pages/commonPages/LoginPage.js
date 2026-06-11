@@ -14,7 +14,7 @@ export class LoginPage {
     this.errorGoBackHomeLink = page.getByRole('link', { name: 'Home', exact: true });
     this.splashLoader = page.locator('#Splashloader, .dash-main-loader');
 
-    // 🎯 BRAND SELECTION & SECURITY MODAL LOCATORS
+    // BRAND SELECTION & SECURITY MODAL LOCATORS
     this.branchSaveBtn = page.locator('#branches-save');
     this.staffTagInput = page.locator('#BranchSelection_StaffTagInput');
     this.tagModalYesBtn = page.locator('#BranchSelection_StaffTagModal input[value="Yes"]');
@@ -42,10 +42,10 @@ export class LoginPage {
     // 5. Intercept redirect anomalies if present
     try {
       await this.errorGoBackHomeLink.waitFor({ state: 'visible', timeout: 5000 });
-      console.log('⚠️ Redirect anomaly caught. Forcing page route...');
+      console.log('Redirect anomaly caught. Forcing page route...');
       await this.errorGoBackHomeLink.click();
     } catch (e) {
-      console.log('✅ App navigated past auth gate without errors.');
+      console.log('App navigated past auth gate without errors.');
     }
 
     // 6. Change wait state behavior to trigger as soon as the DOM is parsed
@@ -57,13 +57,13 @@ export class LoginPage {
     // 7. Settle baseline background loaders
     await expect(this.splashLoader).toBeHidden({ timeout: 15000 });
 
-    // 8. 🎯 SELECT TARGET REPOSITORY STORE BRANCH
+    // 8. SELECT TARGET REPOSITORY STORE BRANCH
     const targetStore = this.page.getByText(branchName);
     await targetStore.waitFor({ state: 'visible', timeout: 10000 });
     await targetStore.click();
     await this.branchSaveBtn.click();
 
-    // 9. 🎯 ENTER SECURITY PIN AUTHORIZATION GATES
+    // 9. ENTER SECURITY PIN AUTHORIZATION GATES
     await this.staffTagInput.waitFor({ state: 'visible', timeout: 10000 });
     await this.staffTagInput.fill(managerTag);
     await this.tagModalYesBtn.click();
@@ -72,11 +72,11 @@ export class LoginPage {
     await expect(this.tagModalContainer).toBeHidden({ timeout: 10000 });
     await expect(this.splashLoader).toBeHidden({ timeout: 15000 });
     
-    // 🎯 THE CRITICAL SOLUTION STABILIZATION:
+    // THE CRITICAL SOLUTION STABILIZATION:
     // Forces Playwright to wait until all backend API requests finish fetching 
     // and the dashboard layout stops spinning before saving state!
     await this.page.waitForLoadState('networkidle').catch(() => {});
     
-    console.log('🚀 Login, Branch Selection, and Security clearance verified successfully!');
+    console.log('Login, Branch Selection, and Security clearance verified successfully!');
   }
 }

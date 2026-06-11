@@ -34,7 +34,7 @@ test.beforeEach(async ({ page }) => {
 test('E2E Suite - Complete Box History Search Execution', async ({ page }) => {
   const dynamicTestCaseId = `DASH-TC-BH-${testCaseIdCounter}`;
   
-  // 🎯 THE FIX: Maps the Box History parameters into the horizontal grid spreadsheet cells!
+  // THE FIX: Maps the Box History parameters into the horizontal grid spreadsheet cells!
   writeAllureEnvironmentProperties({
     "Test Case ID": dynamicTestCaseId,
     "Test User": testData.loginUser,
