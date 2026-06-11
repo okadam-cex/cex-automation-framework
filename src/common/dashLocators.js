@@ -25,12 +25,19 @@ export const dashLocators = {
     tagModalContainer: (page) => page.locator('#BranchSelection_StaffTagModal')
   },
 
-  boxHistory: {
+boxHistory: {
     boxHistoryCard: (page) => page.getByRole('heading', { name: 'Box History' }),
     searchInput: (page) => page.locator('#algoliaSearchInput'),
     searchBtn: (page) => page.locator('button.box-search-btn'),
     clearBtn: (page) => page.getByRole('button', { name: 'Clear', exact: true }),
-    searchResultItem: (page, itemText) => page.getByText(itemText).last()
+    searchResultItem: (page, itemText) => page.getByText(itemText).last(),
+    searchResultCard: (page, itemText) => page.locator('div.card-table-details-holder', { hasText: itemText }).first(),
+    innerHistorySearchBtn: (page) => page.locator('#box-history-one button[type="submit"], button.btn-primary:has-text("Search")').first(),
+    
+    // EXPORT SPECIFIC LOCATORS
+    popupCloseBtn: (page) => page.locator('#btn-releasenote-close, .toast-close-button, .close').first(),
+    exportDropdownBtn: (page) => page.locator('#exportBtn, a:has-text("Export")').first(),
+    exportCsvOption: (page) => page.getByRole('link', { name: 'Export to CSV', exact: true })
   },
 
   stockTaker: {

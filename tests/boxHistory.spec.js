@@ -10,27 +10,22 @@ const testData = {
   firstBoxId: "0045496380564",
   firstProductName: "Nintendo Amiibo Samus Aran Figure",
   secondBoxId: "04549650CPB8BITA",
-  secondProductName: "NEW 3DS Cover Plate 8-Bit Characters" // Extracted from your 3rd screenshot
+  secondProductName: "NEW 3DS Cover Plate 8-Bit Characters" 
 };
 
 test.beforeEach(async ({ page }) => {
-  // 1. Navigate directly to dashboard
   await page.goto('https://uat-dashwin2022.cex.webuy.dev/home/');
   
-  // 2. Clear the session-specific Branch prompt
   await dashLocators.branchSelection.branchOption(page, testData.branchName).waitFor({ state: 'visible', timeout: 10000 });
   await dashLocators.branchSelection.branchOption(page, testData.branchName).click();
   await dashLocators.branchSelection.branchSaveBtn(page).click();
 
-  // 3. Clear the session-specific Manager PIN prompt
   await dashLocators.branchSelection.staffTagInput(page).fill(process.env.APP_TAG || '666');
   await dashLocators.branchSelection.tagModalYesBtn(page).click();
 
-  // 4. Wait for the dashboard to stabilize
   await handleGlobalLoader(page);
 });
 
-// TEST NAME ALIGNED EXACTLY WITH JIRA SCENARIO
 test('DASH-TC-202: Regression testing of Box history module', async ({ page }) => {
   const jiraTestCaseId = 'DASH-TC-202';
   
@@ -46,18 +41,27 @@ test('DASH-TC-202: Regression testing of Box history module', async ({ page }) =
   // Step 2: click on the box history module.
   await boxHistoryPage.navigateToModule();
 
-  // Step 8: we can search particular transaction with boxid
-  await boxHistoryPage.searchByBoxId(testData.firstBoxId);
+  // Step 8: search particular transaction with boxid
+  await boxHistoryPage.searchByBoxId(testData.firstBoxId, 'Step8');
   await boxHistoryPage.verifySearchResultVisible(testData.firstProductName);
 
-  // Step 9: after entering box id and select the filters and click on the clear button
+  // Step 9: clear filters
   await boxHistoryPage.clearFilters();
 
-  // Custom step mapping to your workflow: Search the second box ID
-  console.log(`Step: Enter the second box name and click on search button [ ${testData.secondBoxId} ]`);
-  await boxHistoryPage.searchByBoxId(testData.secondBoxId);
+  // Step 10: Enter the second box name utilizing the autocomplete picker
+  await boxHistoryPage.searchBoxWithAutocomplete(testData.secondBoxId, testData.secondProductName);
   await boxHistoryPage.verifySearchResultVisible(testData.secondProductName);
   
-  // Save final state screenshot for Allure / Jira evidence in the dedicated folder
-  await page.screenshot({ path: `tests/outputScreenshots/boxHistory/${jiraTestCaseId}_Success_Snapshot.png`, fullPage: true });
+  // Step 11: Click the search result item to open details
+  await boxHistoryPage.openBoxDetails(testData.secondProductName);
+  
+  // Step 12: Click inner filter search button to populate history logs
+  await boxHistoryPage.searchInnerHistoryRecords();
+  
+  // Step 13: Intercept and save the CSV file export directly to the runner output directory
+  const targetDownloadDirectory = test.info().outputDir;
+  await boxHistoryPage.exportHistoryToCSV(targetDownloadDirectory);
+  
+  // Save final state screenshot
+  await page.screenshot({ path: `tests/outputScreenshots/boxHistory/${jiraTestCaseId}_Final_State.png`, fullPage: true });
 });
