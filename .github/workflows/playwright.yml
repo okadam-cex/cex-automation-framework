@@ -8,7 +8,7 @@ on:
   # Manual Trigger: Permits ad-hoc manual execution from the GitHub Actions dashboard
   workflow_dispatch:
 
-# Scheduled Trigger: Automatically runs the suite every Monday at 1:00 PM UTC
+  # Scheduled Trigger: Automatically runs the suite every Monday at 1:00 PM UTC
   schedule:
     - cron: '0 13 * * 1'
 
@@ -17,9 +17,9 @@ jobs:
     timeout-minutes: 60
     runs-on: self-hosted
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v5
       with:
         node-version: lts/*
         
@@ -39,7 +39,7 @@ jobs:
       
     # Artifact Archival: Uploads the compiled Allure report folder for distribution
     - name: Upload Allure Report Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: always()
       with:
         name: allure-report-dashboard
