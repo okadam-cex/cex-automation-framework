@@ -36,7 +36,7 @@ test.beforeEach(async ({ page }) => {
 test('Stock Management - Complete Stock Check End-to-End Flow', async ({ page }) => {
   const dynamicTestCaseId = `DASH-TC-${testCaseIdCounter}`;
   
-  // 🎯 MAPS SPREADSHEET ROW DATA FOR ARWA
+  // MAPS SPREADSHEET ROW DATA FOR ARWA
   writeAllureEnvironmentProperties({
     "Test Case ID": dynamicTestCaseId,
     "Test User": testData.loginUser,
@@ -55,9 +55,7 @@ test('Stock Management - Complete Stock Check End-to-End Flow', async ({ page })
     await stockTakerPage.scanBoxIdViaKeyboardReturn(currentBoxId);
   }
 
-  // 🎯 THE FIX: Instead of passing a barcode string, check for standard grid indicators ("Amiibo" or "1")
   await stockTakerPage.verifyProductVisibleInGrid('Amiibo');
-  
   await stockTakerPage.clickNextToProceed();
   await stockTakerPage.incrementActualQuantityForBox(testData.barcodes[0], 1);
   await stockTakerPage.completeVariancePreview();

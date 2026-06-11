@@ -52,14 +52,14 @@ export class StockTakerPage {
   }
 
   async navigateToModule(managerTag) {
-    console.log('📌 Step 1: Navigate to "Stock Taker Tool" module');
+    console.log('Step 1: Navigate to "Stock Taker Tool" module');
     await this.stockManagementGridCard.waitFor({ state: 'visible', timeout: 15000 });
     await this.stockManagementGridCard.click();
     
     await this.stockTakerCard.waitFor({ state: 'visible', timeout: 10000 });
     await this.stockTakerCard.click();
     
-    console.log('📌 Step 2: Scan Level 3 tag');
+    console.log('Step 2: Scan Level 3 tag');
     try {
       await this.sttManagerTagInput.waitFor({ state: 'visible', timeout: 4000 });
       await this.sttManagerTagInput.fill(managerTag);
@@ -77,12 +77,12 @@ export class StockTakerPage {
   }
 
   async startNewStockCheck(categoryName) {
-    console.log('📌 Step 3: Click "Start New Stock Check"');
+    console.log('Step 3: Click "Start New Stock Check"');
     await this.newStockCheckBtn.waitFor({ state: 'visible', timeout: 15000 });
     await this.newStockCheckBtn.scrollIntoViewIfNeeded();
     await this.newStockCheckBtn.click({ force: true });
 
-    console.log(`📌 Step 4: Select multiple categories [ Target: ${categoryName} ]`);
+    console.log(`Step 4: Select multiple categories [ Target: ${categoryName} ]`);
     await this.categorySearchInput.waitFor({ state: 'visible', timeout: 10000 });
     await this.categorySearchInput.fill(categoryName);
     await this.page.waitForTimeout(1500); 
@@ -91,14 +91,14 @@ export class StockTakerPage {
     await targetedCheckbox.waitFor({ state: 'attached', timeout: 10000 });
     await targetedCheckbox.dispatchEvent('click');
 
-    console.log('📌 Step 5: Click "Proceed to Scan"');
+    console.log('Step 5: Click "Proceed to Scan"');
     await this.proceedToScanBtn.waitFor({ state: 'visible', timeout: 10000 });
     await this.proceedToScanBtn.click({ force: true });
     await this.page.waitForLoadState('networkidle').catch(() => {});
   }
 
   async scanBoxIdViaKeyboardReturn(boxId) {
-    console.log(`📌 Step 6: Scan multiple boxIDs (including duplicates) -> Processing ID: [ ${boxId} ]`);
+    console.log(`Step 6: Scan multiple boxIDs (including duplicates) -> Processing ID: [ ${boxId} ]`);
     await this.barcodeInput.waitFor({ state: 'visible', timeout: 15000 });
     await this.barcodeInput.fill(boxId);
     await this.barcodeInput.press('Enter');
@@ -117,7 +117,7 @@ export class StockTakerPage {
   }
 
   async clickNextToProceed() {
-    console.log('📌 Step 7: Click "Next" to progress beyond scanning modules layers');
+    console.log('Step 7: Click "Next" to progress beyond scanning modules layers');
     await this.nextBtn.waitFor({ state: 'visible', timeout: 10000 });
     await this.nextBtn.click();
     await this.page.waitForLoadState('networkidle').catch(() => {});
@@ -129,9 +129,9 @@ export class StockTakerPage {
   }
 
   async incrementActualQuantityForBox(boxId, fallbackValue = "1") {
-    console.log('📌 Step 8: Validate variance data fields structures matches items values changes calculations');
+    console.log('Step 8: Validate variance data fields structures matches items values changes calculations');
     if (await this.allStockMatchesView.isVisible({ timeout: 3000 }).catch(() => false)) {
-      console.log('   🎉 System status reads perfect stock match. Variance automatically verified.');
+      console.log('System status reads perfect stock match. Variance automatically verified.');
       return; 
     }
 
@@ -159,7 +159,7 @@ export class StockTakerPage {
   }
 
   async completeVariancePreview() {
-    console.log('📌 Step 9: Click "Next" to trigger totals processing configurations layouts');
+    console.log('Step 9: Click "Next" to trigger totals processing configurations layouts');
     await this.varianceNextBtn.waitFor({ state: 'visible', timeout: 12000 });
     await this.varianceNextBtn.scrollIntoViewIfNeeded();
     await this.varianceNextBtn.click();
@@ -175,11 +175,11 @@ export class StockTakerPage {
       await this.networkLoaderCircle.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
     }
     await this.page.waitForTimeout(1500);
-    console.log('📌 Step 10: Validate summary & variance grid totals calculations metrics configurations views');
+    console.log('Step 10: Validate summary & variance grid totals calculations metrics configurations views');
   }
 
   async clickVarianceNow() {
-    console.log('📌 Step 11: Click "Variance Now" to execute manager pin authorization checks entries link lock');
+    console.log('Step 11: Click "Variance Now" to execute manager pin authorization checks entries link lock');
     await this.varianceNowBtn.waitFor({ state: 'visible', timeout: 12000 });
     await this.varianceNowBtn.scrollIntoViewIfNeeded();
     await this.varianceNowBtn.click();
@@ -195,13 +195,13 @@ export class StockTakerPage {
   }
 
   async verifyAndResetStockTakerSuccessState() {
-    console.log('📌 Step 12: Return to Landing Page and clear finished sessions contexts');
+    console.log('Step 12: Return to Landing Page and clear finished sessions contexts');
     await expect(this.successModalContainer).toBeVisible({ timeout: 15000 });
 
     await this.successNewStockCheckBtn.waitFor({ state: 'visible', timeout: 10000 });
     await this.successNewStockCheckBtn.click();
 
     await expect(this.successModalContainer).toBeHidden({ timeout: 10000 });
-    console.log('🏁 Complete 12-Step flow finished successfully.');
+    console.log('Stock Variance completed successfully.');
   }
 }
