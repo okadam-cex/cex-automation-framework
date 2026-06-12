@@ -34,10 +34,23 @@ boxHistory: {
     searchResultCard: (page, itemText) => page.locator('div.card-table-details-holder', { hasText: itemText }).first(),
     innerHistorySearchBtn: (page) => page.locator('#box-history-one button[type="submit"], button.btn-primary:has-text("Search")').first(),
     
-    // EXPORT SPECIFIC LOCATORS
+  // EXPORT CSV LOCATORS
     popupCloseBtn: (page) => page.locator('#btn-releasenote-close, .toast-close-button, .close').first(),
     exportDropdownBtn: (page) => page.locator('#exportBtn, a:has-text("Export")').first(),
-    exportCsvOption: (page) => page.getByRole('link', { name: 'Export to CSV', exact: true })
+    exportCsvOption: (page) => page.getByRole('link', { name: 'Export to CSV', exact: true }),
+ 
+    //Box Receipt print locators
+    firstHistoryRecord: (page) => page.getByRole('listitem').filter({ hasText: 'Transaction:' }).first(),
+    pdfCanvas: (page) => page.locator('canvas.pdf-page').first(),
+    printReceiptBtn: (page) => page.getByRole('button', { name: 'Print Receipt' }),
+    printerOption: (page, printerName) => page.locator(`label:has-text("${printerName}")`),
+    saveAndPrintBtn: (page) => page.locator('input[value="Save & Print"]'),
+
+// NEW: Print Authorization Modal Locators
+    printTagInput: (page) => page.locator('#ReprintReceiptStaffTagModal_StaffTagInput'),
+    
+    // REVISED: Scoped strictly to the active Print modal container ID to avoid hidden DOM clones
+    printTagYesBtn: (page) => page.locator('#ReprintReceiptStaffTagModal_StaffTagModal input[value="Yes"].btn-primary')
   },
 
   stockTaker: {

@@ -38,29 +38,34 @@ test('DASH-TC-202: Regression testing of Box history module', async ({ page }) =
 
   const boxHistoryPage = new BoxHistoryPage(page);
 
-  // Step 2: click on the box history module.
-  await boxHistoryPage.navigateToModule();
-
-  // Step 8: search particular transaction with boxid
-  await boxHistoryPage.searchByBoxId(testData.firstBoxId, 'Step8');
-  await boxHistoryPage.verifySearchResultVisible(testData.firstProductName);
-
-  // Step 9: clear filters
-  await boxHistoryPage.clearFilters();
-
-  // Step 10: Enter the second box name utilizing the autocomplete picker
-  await boxHistoryPage.searchBoxWithAutocomplete(testData.secondBoxId, testData.secondProductName);
-  await boxHistoryPage.verifySearchResultVisible(testData.secondProductName);
+  await boxHistoryPage.navigateToModule('Step 1');
+  await boxHistoryPage.searchByBoxId(testData.firstBoxId, 'Step 2');
+  await boxHistoryPage.verifySearchResultVisible(testData.firstProductName, 'Step 3');
+  await boxHistoryPage.clearFilters('Step 4');
+  await boxHistoryPage.searchBoxWithAutocomplete(testData.secondBoxId, testData.secondProductName, 'Step 5');
+  await boxHistoryPage.verifySearchResultVisible(testData.secondProductName, 'Step 6');
+  await boxHistoryPage.openBoxDetails(testData.secondProductName, 'Step 7');
+  await boxHistoryPage.searchInnerHistoryRecords('Step 8');
   
-  // Step 11: Click the search result item to open details
-  await boxHistoryPage.openBoxDetails(testData.secondProductName);
-  
-  // Step 12: Click inner filter search button to populate history logs
-  await boxHistoryPage.searchInnerHistoryRecords();
-  
-  // Step 13: Intercept and save the CSV file export directly to the runner output directory
   const targetDownloadDirectory = test.info().outputDir;
-  await boxHistoryPage.exportHistoryToCSV(targetDownloadDirectory);
+  const downloadedCsvPath = await boxHistoryPage.exportHistoryToCSV(targetDownloadDirectory, 'Step 9');
+  
+  // Attach the downloaded CSV directly to the Playwright / Allure Report
+  await test.info().attach('Box_History_CSV_Report', {
+    path: downloadedCsvPath,
+    contentType: 'text/csv'
+  });
+  
+  await boxHistoryPage.openFirstTransactionRecord('Step 10');
+  
+  await boxHistoryPage.printTransactionReceipt('Step 11');
+  
+  // NEW: Authorize print using the same tag logic from the setup block
+  const managerTag = process.env.APP_TAG || '666';
+  await boxHistoryPage.authorizePrintReceipt(managerTag, 'Step 12');
+  
+  // NEW: Select the printer and dispatch the print job
+  await boxHistoryPage.selectPrinterAndPrint('UAT_Receipt_DASH', 'Step 13');
   
   // Save final state screenshot
   await page.screenshot({ path: `tests/outputScreenshots/boxHistory/${jiraTestCaseId}_Final_State.png`, fullPage: true });
