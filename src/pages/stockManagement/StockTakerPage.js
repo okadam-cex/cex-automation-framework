@@ -1,6 +1,11 @@
 import { expect } from '@playwright/test';
 import { dashLocators } from '../../common/dashLocators.js';
-import { handleGlobalLoader, clearStaffSecurityGate, trackToastAlerts } from '../../common/dashHelpers.js';
+import { 
+  handleGlobalLoader, 
+  clearStaffSecurityGate, 
+  trackToastAlerts, 
+  logStepAndCapture 
+} from '../../common/dashHelpers.js';
 
 export class StockTakerPage {
   constructor(page) {
@@ -8,14 +13,15 @@ export class StockTakerPage {
   }
 
   async navigateToModule(managerTag) {
-    console.log('Step 1: Navigate to "Stock Taker Tool" module');
+    await logStepAndCapture(this.page, 'Step 1', 'Navigate to "Stock Taker Tool" module', 'stockManagement/stockTaker', 'Navigate_To_Module');
+    
     await dashLocators.stockTaker.managementGridCard(this.page).waitFor({ state: 'visible', timeout: 15000 });
     await dashLocators.stockTaker.managementGridCard(this.page).click();
     
     await dashLocators.stockTaker.stockTakerCard(this.page).waitFor({ state: 'visible', timeout: 10000 });
     await dashLocators.stockTaker.stockTakerCard(this.page).click();
     
-    console.log('Step 2: Scan Level 3 tag');
+    console.log('Step 2: Scan Level 3 tag'); // Handled partially by the helper
     await clearStaffSecurityGate(
       this.page,
       dashLocators.stockTaker.initialTagInput(this.page),
@@ -30,40 +36,33 @@ export class StockTakerPage {
       await closeBtn.click();
     }
     
-    // EVIDENCE CAPTURE: Landing Page loaded
-    await this.page.screenshot({ path: 'tests/outputScreenshots/stockManagement/stockTaker/Step1_2_StockTaker_Landing_Page.png', fullPage: true });
+    await logStepAndCapture(this.page, 'Step 2', 'Scan Level 3 tag (Landing Page Loaded)', 'stockManagement/stockTaker', 'Landing_Page');
   }
 
   async startNewStockCheck(categoryName, categoryId = '997') {
-    console.log('Step 3: Click "Start New Stock Check"');
+    await logStepAndCapture(this.page, 'Step 3', 'Click "Start New Stock Check"', 'stockManagement/stockTaker', 'Start_New_Check');
     await dashLocators.stockTaker.newStockCheckBtn(this.page).click({ force: true });
 
-    console.log('Step 4: Select Box categories');
+    await logStepAndCapture(this.page, 'Step 4', 'Select Box categories', 'stockManagement/stockTaker', 'Select_Categories');
     await dashLocators.stockTaker.categorySearchInput(this.page).fill(categoryName);
     await this.page.waitForTimeout(1500); 
-
     await dashLocators.stockTaker.categoryCheckbox(this.page, categoryId).dispatchEvent('click');
     
-    console.log('Step 5: Click "Proceed to Scan"');
+    await logStepAndCapture(this.page, 'Step 5', 'Click "Proceed to Scan"', 'stockManagement/stockTaker', 'Proceed_To_Scan');
     await dashLocators.stockTaker.proceedToScanBtn(this.page).click({ force: true });
     await this.page.waitForLoadState('networkidle').catch(() => {});
-    
-    // EVIDENCE CAPTURE: Category selected and proceeding to scan grid
-    await this.page.screenshot({ path: 'tests/outputScreenshots/stockManagement/stockTaker/Step3_5_Category_Selected.png', fullPage: true });
   }
 
   async scanBoxIdViaKeyboardReturn(boxId) {
-    console.log(`Step 6: Scan multiple boxIDs (including duplicates) -> Box ID: [ ${boxId} ]`);
     const targetField = dashLocators.stockTaker.barcodeScannerInput(this.page);
     await targetField.waitFor({ state: 'visible', timeout: 15000 });
     await targetField.fill(boxId);
     await targetField.press('Enter');
+    
     await this.page.waitForTimeout(1500); 
     await trackToastAlerts(this.page);
     
-    // EVIDENCE CAPTURE: Strip invalid characters from boxId for safe file naming
-    const safeBoxId = boxId.replace(/[^a-zA-Z0-9]/g, '_');
-    await this.page.screenshot({ path: `tests/outputScreenshots/stockManagement/stockTaker/Step6_Scanned_${safeBoxId}.png`, fullPage: true });
+    await logStepAndCapture(this.page, 'Step 6', `Scan multiple boxIDs (including duplicates) -> Box ID: [ ${boxId} ]`, 'stockManagement/stockTaker', `Scanned_${boxId}`);
   }
 
   async verifyProductVisibleInGrid(productNameText) {
@@ -71,20 +70,13 @@ export class StockTakerPage {
   }
 
   async clickNextToProceed() {
-    console.log('Step 7: Click "Next"');
     await dashLocators.stockTaker.nextBtn(this.page).click();
     await handleGlobalLoader(this.page);
     
-    // EVIDENCE CAPTURE: Variance preview screen
-    await this.page.screenshot({ path: 'tests/outputScreenshots/stockManagement/stockTaker/Step7_Variance_Preview_Screen.png', fullPage: true });
+    await logStepAndCapture(this.page, 'Step 7', 'Click "Next"', 'stockManagement/stockTaker', 'Variance_Preview_Screen');
   }
 
   async incrementActualQuantityForBox(boxId, fallbackValue = "1") {
-    console.log('Step 8: Validate variance data');
-    if (await dashLocators.stockTaker.allStockMatchesView(this.page).isVisible({ timeout: 3000 }).catch(() => false)) {
-      return; 
-    }
-
     const targetedDataRow = dashLocators.stockTaker.varianceTableRows(this.page).filter({ hasText: boxId }).first();
     await targetedDataRow.scrollIntoViewIfNeeded();
 
@@ -104,14 +96,13 @@ export class StockTakerPage {
       await this.page.keyboard.type(fallbackValue.toString());
       await this.page.keyboard.press('Tab');
     }
-    await this.page.waitForTimeout(1000); 
     
-    // EVIDENCE CAPTURE: Adjusted quantities
-    await this.page.screenshot({ path: 'tests/outputScreenshots/stockManagement/stockTaker/Step8_Variance_Data_Updated.png', fullPage: true });
+    await this.page.waitForTimeout(1000); 
+    await logStepAndCapture(this.page, 'Step 8', `Manually updated actual value to test field functionality for Box [ ${boxId} ]`, 'stockManagement/stockTaker', 'Variance_Field_Tested');
   }
 
   async completeVariancePreview() {
-    console.log('Step 9: Click "Next"');
+    await logStepAndCapture(this.page, 'Step 9', 'Click "Next"', 'stockManagement/stockTaker', 'Click_Next_Variance');
     await dashLocators.stockTaker.varianceNextBtn(this.page).scrollIntoViewIfNeeded();
     await dashLocators.stockTaker.varianceNextBtn(this.page).click();
     
@@ -120,33 +111,31 @@ export class StockTakerPage {
     } catch (e) {}
     await handleGlobalLoader(this.page);
     
-    console.log('Step 10: Validate summary & variance grid');
-    // EVIDENCE CAPTURE: Final Variance Summary
-    await this.page.screenshot({ path: 'tests/outputScreenshots/stockManagement/stockTaker/Step9_10_Final_Variance_Summary.png', fullPage: true });
+    await logStepAndCapture(this.page, 'Step 10', 'Validate summary & variance grid', 'stockManagement/stockTaker', 'Final_Variance_Summary');
   }
 
   async clickVarianceNow() {
-    console.log('Step 11: Click "Variance Now"');
+    await logStepAndCapture(this.page, 'Step 11', 'Click "Variance Now"', 'stockManagement/stockTaker', 'Click_Variance_Now');
     await dashLocators.stockTaker.varianceNowBtn(this.page).scrollIntoViewIfNeeded();
     await dashLocators.stockTaker.varianceNowBtn(this.page).click();
   }
 
   async handleVarianceConfirmationModal(managerTag) {
+    const finalTagModalContainer = this.page.locator('#StaffTagModal_StaffTagModal').last();
+
     await clearStaffSecurityGate(
       this.page,
       dashLocators.stockTaker.finalTagInput(this.page),
       dashLocators.stockTaker.finalTagYesBtn(this.page),
-      dashLocators.stockTaker.successModalContainer(this.page),
+      finalTagModalContainer,
       managerTag
     );
   }
 
   async verifyAndResetStockTakerSuccessState() {
-    console.log('Step 12: Return to Landing Page');
     await expect(dashLocators.stockTaker.successModalContainer(this.page)).toBeVisible({ timeout: 15000 });
     
-    // EVIDENCE CAPTURE: Success modal displayed before closing
-    await this.page.screenshot({ path: 'tests/outputScreenshots/stockManagement/stockTaker/Step11_12_Stock_Check_Success.png', fullPage: true });
+    await logStepAndCapture(this.page, 'Step 12', 'Return to Landing Page', 'stockManagement/stockTaker', 'Stock_Check_Success');
     
     await dashLocators.stockTaker.successNewStockCheckBtn(this.page).click();
     await expect(dashLocators.stockTaker.successModalContainer(this.page)).toBeHidden({ timeout: 10000 });
