@@ -6,6 +6,8 @@ import {
   trackToastAlerts, 
   logStepAndCapture 
 } from '../../common/dashHelpers.js';
+// ARWA INTEGRATION: Importing her screenshot function
+import { captureOrderScreenshotOrderProcessing } from '../../common/helpers.js';
 
 export class StockTakerPage {
   constructor(page) {
@@ -21,7 +23,7 @@ export class StockTakerPage {
     await dashLocators.stockTaker.stockTakerCard(this.page).waitFor({ state: 'visible', timeout: 10000 });
     await dashLocators.stockTaker.stockTakerCard(this.page).click();
     
-    console.log('Step 2: Scan Level 3 tag'); // Handled partially by the helper
+    console.log('Step 2: Scan Level 3 tag'); 
     await clearStaffSecurityGate(
       this.page,
       dashLocators.stockTaker.initialTagInput(this.page),
@@ -132,9 +134,13 @@ export class StockTakerPage {
     );
   }
 
-  async verifyAndResetStockTakerSuccessState() {
+  async verifyAndResetStockTakerSuccessState(testInfo) {
     await expect(dashLocators.stockTaker.successModalContainer(this.page)).toBeVisible({ timeout: 15000 });
     
+    // ARWA INTEGRATION: Captures the screenshot natively for her portal app
+    const timestamp = new Date().getTime();
+    await captureOrderScreenshotOrderProcessing(this.page, testInfo, `STOCKCHECK_${timestamp}`);
+
     await logStepAndCapture(this.page, 'Step 12', 'Return to Landing Page', 'stockManagement/stockTaker', 'Stock_Check_Success');
     
     await dashLocators.stockTaker.successNewStockCheckBtn(this.page).click();

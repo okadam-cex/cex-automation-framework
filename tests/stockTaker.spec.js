@@ -13,24 +13,19 @@ const testData = {
 };
 
 test.beforeEach(async ({ page }) => {
-  // 1. Navigate directly to dashboard (Login is bypassed via auth.json)
   await page.goto('https://uat-dashwin2022.cex.webuy.dev/home/');
   
-  // 2. Clear the session-specific Branch prompt
   await dashLocators.branchSelection.branchOption(page, testData.branchName).waitFor({ state: 'visible', timeout: 10000 });
   await dashLocators.branchSelection.branchOption(page, testData.branchName).click();
   await dashLocators.branchSelection.branchSaveBtn(page).click();
 
-  // 3. Clear the session-specific Manager PIN prompt
   await dashLocators.branchSelection.staffTagInput(page).fill(process.env.APP_TAG || testData.staffTag);
   await dashLocators.branchSelection.tagModalYesBtn(page).click();
 
-  // 4. Wait for the dashboard to stabilize
   await handleGlobalLoader(page);
 });
 
-// TEST NAME ALIGNED EXACTLY WITH JIRA SCENARIO
-test('DASH-TC-1483: Scenario 1 - Complete Stock Check End-to-End Flow', async ({ page }) => {
+test('DASH-TC-1483: Scenario 1 - Complete Stock Check End-to-End Flow', async ({ page }, testInfo) => {
   const jiraTestCaseId = 'DASH-TC-1483';
   
   writeAllureEnvironmentProperties({
@@ -57,7 +52,6 @@ test('DASH-TC-1483: Scenario 1 - Complete Stock Check End-to-End Flow', async ({
   await stockTakerPage.clickVarianceNow();
   await stockTakerPage.handleVarianceConfirmationModal(testData.staffTag);
   
-// Saves screenshot using the Jira ID inside the newly mapped nested folder!
-  await page.screenshot({ path: `tests/outputScreenshots/stockManagement/stockTaker/${jiraTestCaseId}_Final_State.png`, fullPage: true });
-  await stockTakerPage.verifyAndResetStockTakerSuccessState();
+  // Pass testInfo into the method call for Arwa's code
+  await stockTakerPage.verifyAndResetStockTakerSuccessState(testInfo);
 });

@@ -17,3 +17,14 @@ tests/outputScreenshots/
 # Allure Reporting Artifacts
 allure-results/
 allure-report/
+
+# Ignore raw automation test report outputs
+allure-results/
+allure-report/
+playwright-report/
+test-results/
+
+# Ignore zip archive folder and any dynamic zip outputs
+archives/
+*.zip
+tests/outputScreenshots/

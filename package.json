@@ -3,16 +3,20 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "type": "module",
+  "scripts": {
+      "test:e2e": "npx playwright test --workers=1",
+      "posttest:e2e": "node archive-reports.cjs"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@reportportal/agent-js-playwright": "^5.4.1",
     "@types/node": "^25.9.1",
     "allure-playwright": "^3.9.0",
+    "archiver": "^8.0.0",
     "playwright-tesults-reporter": "^1.5.0"
   },
   "dependencies": {

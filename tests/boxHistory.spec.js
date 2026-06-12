@@ -26,7 +26,7 @@ test.beforeEach(async ({ page }) => {
   await handleGlobalLoader(page);
 });
 
-test('DASH-TC-202: Regression testing of Box history module', async ({ page }) => {
+test('DASH-TC-202: Regression testing of Box history module', async ({ page }, testInfo) => {
   const jiraTestCaseId = 'DASH-TC-202';
   
   writeAllureEnvironmentProperties({
@@ -47,26 +47,20 @@ test('DASH-TC-202: Regression testing of Box history module', async ({ page }) =
   await boxHistoryPage.openBoxDetails(testData.secondProductName, 'Step 7');
   await boxHistoryPage.searchInnerHistoryRecords('Step 8');
   
-  const targetDownloadDirectory = test.info().outputDir;
+  const targetDownloadDirectory = testInfo.outputDir;
   const downloadedCsvPath = await boxHistoryPage.exportHistoryToCSV(targetDownloadDirectory, 'Step 9');
   
-  // Attach the downloaded CSV directly to the Playwright / Allure Report
-  await test.info().attach('Box_History_CSV_Report', {
+  await testInfo.attach('Box_History_CSV_Report', {
     path: downloadedCsvPath,
     contentType: 'text/csv'
   });
   
   await boxHistoryPage.openFirstTransactionRecord('Step 10');
-  
   await boxHistoryPage.printTransactionReceipt('Step 11');
   
-  // NEW: Authorize print using the same tag logic from the setup block
   const managerTag = process.env.APP_TAG || '666';
   await boxHistoryPage.authorizePrintReceipt(managerTag, 'Step 12');
   
-  // NEW: Select the printer and dispatch the print job
-  await boxHistoryPage.selectPrinterAndPrint('UAT_Receipt_DASH', 'Step 13');
-  
-  // Save final state screenshot
-  await page.screenshot({ path: `tests/outputScreenshots/boxHistory/${jiraTestCaseId}_Final_State.png`, fullPage: true });
+  // Pass testInfo into the method call for Arwa's code
+  await boxHistoryPage.selectPrinterAndPrint(testInfo, 'UAT_Receipt_DASH', 'Step 13');
 });
